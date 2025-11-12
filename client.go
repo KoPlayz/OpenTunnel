@@ -27,7 +27,7 @@ type AddResponse struct {
 var apiKey string = "" // Global API key variable
 var configFilePath string = "otv4.conf"
 
-// Reads server, port, and API key configuration from the config file
+// Read server, port, & API key configuration from config
 func readConfig() (string, string, string, error) {
 	file, err := os.Open(configFilePath)
 	if err != nil {
