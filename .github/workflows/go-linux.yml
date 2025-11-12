@@ -11,6 +11,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+     -  name: Install libraries
+        run: |
+        sudo apt install libx11-dev
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
