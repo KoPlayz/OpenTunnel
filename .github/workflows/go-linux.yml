@@ -13,7 +13,7 @@ jobs:
 
       -  name: Install libraries
          run: |
-          sudo apt install libx11-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+          sudo apt install libx11-dev libxcursor-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
       - name: Set up Go
         uses: actions/setup-go@v5
