@@ -18,10 +18,10 @@ jobs:
 
       - name: Build Windows binary
         run: |
-          go build -o client.exe ./client.go
+          go build -o client-win.exe ./client.go
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-client
-          path: client.exe
+          path: client-win.exe
