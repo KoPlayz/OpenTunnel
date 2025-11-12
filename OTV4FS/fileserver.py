@@ -1,12 +1,31 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json, os, base64, urllib.request, urllib.parse
 from datetime import datetime
+import json
+import argparse
 
-PORT = 8080
-API_KEY = "ADadm7QY50k2rySCj0Nang69hhZne8SR"  # Replace with your desired API key
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--config", type=str, default="config.json")
+args = argparser.parse_args()
+config = args.config
 
-LOG_DIR = "Logs"
-os.makedirs(LOG_DIR, exist_ok=True)  # Ensure the Logs directory exists
+if not os.path.exists(config):
+    print(f"ERR: Unable to find config file {config}. Exiting...")
+    exit(1)
+
+with open(config, "r") as f:
+    config = json.load(f)
+
+PORT = int(config.get("port", 8080))
+API_KEY = config.get("api_key", "NOKEYSUPPLIED")
+LOG_DIR = config.get("logsdir", "Logs")
+os.makedirs(LOG_DIR, exist_ok=True)  # Ensure the Logs directory exists, if not, create it
+
+if API_KEY == "NOKEYSUPPLIED":
+    print("ERR: No API Key supplied in the config. (config.json). Exiting...")
+    exit(1)
+if API_KEY == "placeholder":
+    print("WARN: Default API Key supplied in the config. (config.json). This is extremely insecure!")
 
 class MyHandler(BaseHTTPRequestHandler):
     def log_request(self, message):
@@ -33,14 +52,14 @@ class MyHandler(BaseHTTPRequestHandler):
             return  # Stop processing if authentication fails
 
         if self.path == "/list":
-            # Encode filenames to ensure they are URL-safe
+            # Encode filenames to ensure they are URL safe (previous issue with with spaces i think)
             files = [urllib.parse.quote(f) for f in os.listdir(".") if f.endswith(".ote")]
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(files).encode())
         else:
-            path = urllib.parse.unquote(self.path.lstrip("/"))  # Decode the requested filename
+            path = urllib.parse.unquote(self.path.lstrip("/"))  # Decode filename
             if os.path.exists(path):
                 self.send_response(200)
                 self.send_header("Content-Type", "application/octet-stream")
@@ -65,7 +84,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(400, "Missing url")
                 return
 
-            self.log_request(f"URL requested: {url}")  # Log the requested URL
+            self.log_request(f"URL requested: {url}")
 
             try:
                 # Open URL and follow redirects to actual file
@@ -84,7 +103,6 @@ class MyHandler(BaseHTTPRequestHandler):
                     # Replace %20 with a space in the filename (URL decoding)
                     filename = urllib.parse.unquote(filename)
 
-                    # Save the file
                     with open(filename, "wb") as f:
                         f.write(response.read())
 
@@ -92,12 +110,12 @@ class MyHandler(BaseHTTPRequestHandler):
                 with open(filename, "rb") as f:
                     encoded = base64.b64encode(f.read()).decode()
 
-                # Save as .ote
+                # Save with extention
                 ote_name = filename + ".ote"
                 with open(ote_name, "w") as f:
                     f.write(encoded)
 
-                os.remove(filename)  # clean original
+                os.remove(filename)
 
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
