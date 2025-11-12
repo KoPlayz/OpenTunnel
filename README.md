@@ -1,15 +1,35 @@
 # OpenTunnel V4 Proxy Server
 
+### OpenTunnel (V4) is an open source proxy server made to bypass network download restrictions.
+
 ## Client Usage
 
-- Clone the repo:
+- Download release from:
 
-```git clone https://github.com/KoPlayz/OpenTunnel.git```
+`https://github.com/KoPlayz/OpenTunnel/releases/tag/client-v4.1.0`
 
-- cd to the repo directory
+for your device
 
-```cd OpenTunnel``` (or use gui file manager)
+- Update port, server ip/domain, and set API Key
 
-- Edit the config file
+- run client
 
-```nano OTV4.conf
+
+
+## Server Usage
+
+- Download latest server release from:
+
+`https://github.com/KoPlayz/OpenTunnel/releases/tag/server-v4.0.0`
+
+- Run server to generate initial config (replace {python} with the path to your python binary)
+
+`$ {python} fileserver.py`
+
+- Edit config.json to specify port, logs directory, and API key (use any text editor)
+
+`$ nano config.json`
+
+- Rerun server with new config
+
+`$ {python} fileserver.py`

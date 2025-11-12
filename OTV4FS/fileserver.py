@@ -9,8 +9,16 @@ argparser.add_argument("--config", type=str, default="config.json")
 args = argparser.parse_args()
 config = args.config
 
+
 if not os.path.exists(config):
-    print(f"ERR: Unable to find config file {config}. Exiting...")
+    default_config = {
+        "port": 8080,
+        "api_key": "placeholder",
+        "logsdir": "Logs"
+    }
+    with open(config, "w") as f:
+        json.dump(default_config, f, indent=4)
+    print(f"ERR: Attempted to generate config file {config}. Please edit it before running again.")
     exit(1)
 
 with open(config, "r") as f:

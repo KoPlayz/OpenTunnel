@@ -133,8 +133,8 @@ func addDownload(server, url string) error {
 }
 
 func refreshFiles(serverEntry, portEntry, apiKeyEntry *widget.Entry, fileList *fyne.Container, defaultServer, defaultPort string) {
-	server := serverEntry.Text
-	port := portEntry.Text
+	server := strings.TrimSpace(serverEntry.Text)
+	port := strings.TrimSpace(portEntry.Text)
 	apiKey = strings.TrimSpace(apiKeyEntry.Text) // Dynamically update the API key
 
 	if server == "" {
@@ -143,17 +143,26 @@ func refreshFiles(serverEntry, portEntry, apiKeyEntry *widget.Entry, fileList *f
 	if port == "" {
 		port = defaultPort
 	}
+
+	// Default server to http://
+	if !strings.HasPrefix(server, "http://") && !strings.HasPrefix(server, "https://") {
+		server = "http://" + server
+	}
+
+	// Append port
 	server = fmt.Sprintf("%s:%s", server, port)
 
+	// Fetch file list
 	files, err := fetchFileList(server)
 	fileList.Objects = nil
+
 	if err != nil {
 		fileList.Add(widget.NewLabel(fmt.Sprintf("Error: %v", err)))
 	} else {
 		for _, f := range files {
 			file := strings.ReplaceAll(f, "%20", " ") // Replace %20 with spaces
 			btn := widget.NewButton(file, func() {
-				if err := downloadAndDecode(server, f); err != nil { // Use original filename for download
+				if err := downloadAndDecode(server, f); err != nil {
 					fmt.Println("Error:", err)
 				} else {
 					fmt.Println("Downloaded & decoded:", file)
@@ -162,6 +171,7 @@ func refreshFiles(serverEntry, portEntry, apiKeyEntry *widget.Entry, fileList *f
 			fileList.Add(btn)
 		}
 	}
+
 	fileList.Refresh()
 }
 
@@ -260,6 +270,9 @@ func main() {
 		if server == "" {
 			server = defaultServer
 		}
+		if !strings.HasPrefix(server, "http://") && !strings.HasPrefix(server, "https://") {
+			server = "http://" + server
+		}
 		if port == "" {
 			port = defaultPort
 		}
@@ -282,10 +295,20 @@ func main() {
 		}
 	})
 
+	reloadButton := widget.NewButton("Reload", func() {
+		fmt.Println("Attempting to reestablish connection with server...")
+		refreshFiles(serverEntry, portEntry, apiKeyEntry, fileList, defaultServer, defaultPort)
+		// Save config
+		if err := writeConfig(serverEntry.Text, portEntry.Text, apiKeyEntry.Text); err != nil {
+			fmt.Println("Failed to save configuration:", err)
+		}
+	})
+
 	content := container.NewVBox(
 		serverPortContainer, // Use the grid container for server and port
-		apiKeyEntry,         // Add the API key entry box
+		apiKeyEntry,
 		urlEntry,
+		reloadButton,
 		addButton,
 		widget.NewLabel("Files on server:"),
 		fileList,
