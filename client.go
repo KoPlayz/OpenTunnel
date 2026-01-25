@@ -226,7 +226,7 @@ func main() {
 	defaultPort := "8080"
 	defaultAPIKey := ""
 
-	// Try to read configuration from the file
+	// Read config from otv4.conf
 	server, port, apiKey, err := readConfig()
 	if err != nil {
 		server = defaultServer
@@ -234,32 +234,34 @@ func main() {
 		apiKey = defaultAPIKey
 	}
 
-	// Entry for Server
+	// Hostname/ip input
 	serverEntry := widget.NewEntry()
 	serverEntry.SetPlaceHolder("Enter server address")
 	serverEntry.SetText(server)
 
-	// Entry for Port
+	// Port input
 	portEntry := widget.NewEntry()
 	portEntry.SetPlaceHolder("Port")
 	portEntry.SetText(port)
 
-	// Entry for API Key
+	// API input
 	apiKeyEntry := widget.NewPasswordEntry()
 	apiKeyEntry.SetPlaceHolder("Enter API key")
 	apiKeyEntry.SetText(apiKey)
 
-	// Group Server and Port entries horizontally with proportional widths
+	// server/port group
 	serverPortContainer := container.NewGridWithColumns(2,
 		container.NewVBox(widget.NewLabel("Server:"), serverEntry), // Server takes 2/3 of the width
 		container.NewVBox(widget.NewLabel("Port:"), portEntry),     // Port takes 1/3 of the width
 	)
 
-	// Entry for URL
+	// URL Input
 	urlEntry := widget.NewEntry()
 	urlEntry.SetPlaceHolder("Enter download URL...")
 
 	fileList := container.NewVBox()
+	scrollableFileList := container.NewScroll(fileList)
+	scrollableFileList.SetMinSize(fyne.NewSize(400, 300))
 
 	addButton := widget.NewButton("Add", func() {
 		url := urlEntry.Text
@@ -311,7 +313,7 @@ func main() {
 		reloadButton,
 		addButton,
 		widget.NewLabel("Files on server:"),
-		fileList,
+		scrollableFileList,
 	)
 
 	w.SetContent(content)
